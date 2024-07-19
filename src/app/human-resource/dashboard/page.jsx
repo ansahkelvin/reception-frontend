@@ -7,7 +7,7 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {ChartContainer, ChartTooltip, ChartTooltipContent} from "../../../components/ui/chart";
-import {Bar, CartesianGrid,BarChart, XAxis} from "recharts";
+import {Bar, BarChart, CartesianGrid, XAxis} from "recharts";
 import {CardDescription, CardFooter, CardTitle} from "../../../components/ui/card";
 import {Button} from "../../../components/ui/button";
 import Link from "next/link";
@@ -19,12 +19,12 @@ export default function Dashboard() {
     const [user, setUser] = useState(null)
 
     const chartData = [
-        { day: "Monday", official: 186, nonofficial: 80 },
-        { day: "Tuesday", official: 305, nonofficial: 200 },
-        { day: "Wednesday", official: 237, nonofficial: 120 },
-        { day: "Thursday", official: 73, nonofficial: 190 },
-        { day: "Friday", official: 209, nonofficial: 130 },
-        { day: "Saturday", official: 10, nonofficial: 20 },
+        {day: "Monday", official: 186, nonofficial: 80},
+        {day: "Tuesday", official: 305, nonofficial: 200},
+        {day: "Wednesday", official: 237, nonofficial: 120},
+        {day: "Thursday", official: 73, nonofficial: 190},
+        {day: "Friday", official: 209, nonofficial: 130},
+        {day: "Saturday", official: 10, nonofficial: 20},
     ]
 
     const chartConfig = {
@@ -57,6 +57,7 @@ export default function Dashboard() {
         }
         fetchUser();
     }, [])
+
     return (
         <div className='m-10 flex flex-col gap-10 bg-white'>
             <div>
@@ -74,7 +75,6 @@ export default function Dashboard() {
                     <CardContent>
                         <p className="text-blue-950 font-bold text-2xl">10</p>
                     </CardContent>
-
                 </Card>
 
                 <Card className='w-1/2'>
@@ -86,7 +86,6 @@ export default function Dashboard() {
                     <CardContent>
                         <p className="text-blue-950 font-bold text-2xl">08</p>
                     </CardContent>
-
                 </Card>
 
                 <Card className='w-1/2'>
@@ -95,20 +94,15 @@ export default function Dashboard() {
                         </h1>
                         <p className="text-gray-500 text-sm">These are the total number of visitors awaiting
                             confirmation</p>
-
                     </CardHeader>
                     <CardContent>
                         <p className="text-blue-950 font-bold text-2xl">10</p>
                     </CardContent>
-
                 </Card>
-
             </div>
 
             <div className="grid gap-4 md:gap-8 lg:grid-cols-2 xl:grid-cols-3 mt-5">
-                <Card
-                    className="xl:col-span-2" x-chunk="dashboard-01-chunk-4"
-                >
+                <Card className="xl:col-span-2" x-chunk="dashboard-01-chunk-4">
                     <CardHeader className="flex flex-row items-center">
                         <div className="grid gap-2">
                             <CardTitle>Guest</CardTitle>
@@ -128,10 +122,10 @@ export default function Dashboard() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Guest</TableHead>
-
                                     <TableHead className="text-right">Clock Out</TableHead>
                                 </TableRow>
                             </TableHeader>
+
                             <TableBody>
                                 <TableRow>
                                     <TableCell>
