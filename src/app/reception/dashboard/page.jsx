@@ -7,27 +7,31 @@ import {useEffect, useState} from "react";
 import axios from "axios";
 import {Card, CardContent, CardHeader} from "@/components/ui/card";
 import {ChartContainer, ChartTooltip, ChartTooltipContent} from "../../../components/ui/chart";
-import {Bar, CartesianGrid,BarChart, XAxis} from "recharts";
+import {Bar, BarChart, CartesianGrid, XAxis} from "recharts";
 import {CardDescription, CardFooter, CardTitle} from "../../../components/ui/card";
-import {Avatar, AvatarFallback, AvatarImage} from "../../../components/ui/avatar";
 import {Button} from "../../../components/ui/button";
 import Link from "next/link";
 import {Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "../../../components/ui/table";
-import {Badge} from "../../../components/ui/badge";
 
 
 export default function Dashboard() {
     const token = getToken();
     const [user, setUser] = useState(null)
+    const [premise, setPremise] = useState(null)
+    const [visitors, setTodayVisitor] = useState(null)
+    const [totalPending, setTotalPending] = useState(null)
+    const [guest, setGuest] = useState(null)
+    const [loading, setLoading] = useState(null)
 
     const chartData = [
-        { day: "Monday", official: 186, nonofficial: 80 },
-        { day: "Tuesday", official: 305, nonofficial: 200 },
-        { day: "Wednesday", official: 237, nonofficial: 120 },
-        { day: "Thursday", official: 73, nonofficial: 190 },
-        { day: "Friday", official: 209, nonofficial: 130 },
-        { day: "Saturday", official: 10, nonofficial: 20 },
+        {day: "Monday", official: 186, nonofficial: 80},
+        {day: "Tuesday", official: 305, nonofficial: 200},
+        {day: "Wednesday", official: 237, nonofficial: 120},
+        {day: "Thursday", official: 73, nonofficial: 190},
+        {day: "Friday", official: 209, nonofficial: 130},
+        {day: "Saturday", official: 10, nonofficial: 20},
     ]
+
 
     const chartConfig = {
         desktop: {
@@ -38,6 +42,94 @@ export default function Dashboard() {
             label: "Nonofficial",
             color: "#9ca3af",
         },
+    }
+    useEffect(() => {
+        const fetchDashboard = async () => {
+            try {
+                setLoading(true)
+                const [visitsResponse, totalPendingResponse, inPremiseResponse, guestResponse] = await Promise.all([
+                    fetchVisits(),
+                    fetchTotalPending(),
+                    fetchInPremise(),
+                    fetchGuests()
+                ]);
+                setLoading(false)
+
+
+                setTodayVisitor(visitsResponse.data.todayVisits);
+                setTotalPending(totalPendingResponse.data.totalPending);
+                setPremise(inPremiseResponse.data.inPremiseVisits.length);
+                setGuest(guestResponse.data);
+            } catch (e) {
+                setError(e);
+            } finally {
+                setLoading(false)
+            }
+        };
+
+        fetchDashboard();
+    }, []);
+
+    const fetchGuests = async () => {
+        try {
+            const response = await axios.get('http://localhost:4000/api/v1/visits', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            if (response.status === 200) {
+                console.log("GUEST", response.data)
+                return response.data;
+            }
+        } catch (e) {
+
+        }
+
+    }
+
+    const fetchVisits = async () => {
+        try {
+            const response = await axios.get('http://localhost:4000/api/v1/dashboard/visitors', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+            if (response.status === 200) {
+                return response
+            }
+        } catch (e) {
+
+        }
+    }
+
+    const fetchInPremise = async () => {
+        try {
+            const response = await axios.get('http://localhost:4000/api/v1/dashboard/premise', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (response.status === 200) {
+                return response;
+            }
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
+    const fetchTotalPending = async () => {
+        try {
+            const response = await axios.get('http://localhost:4000/api/v1/dashboard/pending', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            if (response.status === 200) {
+                return response;
+            }
+        } catch (e) {
+            console.log(e)
+        }
     }
 
     useEffect(() => {
@@ -74,7 +166,7 @@ export default function Dashboard() {
                         <p className="text-gray-500 text-sm">These are the total number of visitors received today</p>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-blue-950 font-bold text-2xl">10</p>
+                        <p className="text-blue-950 font-bold text-2xl">{visitors}</p>
                     </CardContent>
 
                 </Card>
@@ -87,7 +179,7 @@ export default function Dashboard() {
                             building</p>
                     </CardHeader>
                     <CardContent>
-                        <p className="text-blue-950 font-bold text-2xl">08</p>
+                        <p className="text-blue-950 font-bold text-2xl">{premise}</p>
                     </CardContent>
 
                 </Card>
@@ -101,7 +193,7 @@ export default function Dashboard() {
 
                     </CardHeader>
                     <CardContent>
-                        <p className="text-blue-950 font-bold text-2xl">10</p>
+                        <p className="text-blue-950 font-bold text-2xl">{totalPending}</p>
                     </CardContent>
 
                 </Card>
@@ -120,7 +212,7 @@ export default function Dashboard() {
                             </CardDescription>
                         </div>
                         <Button asChild size="sm" className="ml-auto gap-1">
-                            <Link href="#">
+                            <Link href="/reception">
                                 View All
                                 <ArrowUpRight className="h-4 w-4"/>
                             </Link>
@@ -131,60 +223,27 @@ export default function Dashboard() {
                             <TableHeader>
                                 <TableRow>
                                     <TableHead>Guest</TableHead>
-
                                     <TableHead className="text-right">Clock Out</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
-                                <TableRow>
-                                    <TableCell>
-                                        <div className="font-medium">Liam Johnson</div>
-                                        <div className="hidden text-sm text-muted-foreground md:inline">
-                                            liam@example.com
-                                        </div>
-                                    </TableCell>
+                                {guest !== null ?
+                                    guest.map((visitor) => {
+                                        return <TableRow key={visitor._id}>
+                                            <TableCell>
+                                                <div className="font-medium">{visitor.full_name}</div>
+                                                <div className=" text-sm text-muted-foreground ">
+                                                    {visitor.email}
+                                                </div>
+                                            </TableCell>
 
-                                    <TableCell className="text-right">2023-06-26</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>
-                                        <div className="font-medium">Olivia Smith</div>
-                                        <div className="hidden text-sm text-muted-foreground md:inline">
-                                            olivia@example.com
-                                        </div>
-                                    </TableCell>
+                                            <TableCell
+                                                className="text-right">{visitor.departure_time === null ? "Pending" : new Date(visitor.departure_time).toLocaleTimeString()}</TableCell>
+                                        </TableRow>
+                                    }) : <TableRow>
 
-                                    <TableCell className="text-right">2023-06-26</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>
-                                        <div className="font-medium">Noah Williams</div>
-                                        <div className="hidden text-sm text-muted-foreground md:inline">
-                                            noah@example.com
-                                        </div>
-                                    </TableCell>
-
-                                    <TableCell className="text-right">2023-06-26</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>
-                                        <div className="font-medium">Emma Brown</div>
-                                        <div className="hidden text-sm text-muted-foreground md:inline">
-                                            emma@example.com
-                                        </div>
-                                    </TableCell>
-                                    {/**/}
-                                    <TableCell className="text-right"> 2023-06-26</TableCell>
-                                </TableRow>
-                                <TableRow>
-                                    <TableCell>
-                                        <div className="font-medium">Liam Johnson</div>
-                                        <div className="hidden text-sm text-muted-foreground md:inline">
-                                            liam@example.com
-                                        </div>
-                                    </TableCell>
-                                    <TableCell className="text-right">2023-06-26</TableCell>
-                                </TableRow>
+                                    </TableRow>
+                                }
                             </TableBody>
                         </Table>
                     </CardContent>

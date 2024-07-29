@@ -1,15 +1,10 @@
 "use client"
 import React, {useEffect} from 'react';
-import { useAuth } from '@/state/authContext'; // Adjust path based on your project structure
+import { useAuth } from '@/state/authContext';
 import {usePathname, useRouter} from 'next/navigation';
-import axios from "axios";
 import Link from "next/link";
 import Image from "next/image";
 import {BiBarChart, BiCalendarWeek} from "react-icons/bi";
-import {GoReport} from "react-icons/go";
-import {FcDocument} from "react-icons/fc";
-import {HiClipboardDocument} from "react-icons/hi2";
-import {IoSettingsOutline} from "react-icons/io5";
 import {CiLogout} from "react-icons/ci";
 import {MdPersonOutline} from "react-icons/md";
 import {Divider} from "@tremor/react";
@@ -40,13 +35,6 @@ const Sidebar = () => {
         },
 
         {
-            title: "Report",
-            url: '/reception/report',
-            active: location.startsWith('/reception/report'),
-            icon: HiClipboardDocument
-
-},
-        {
             title: "Logout",
             url: '/auth/sign-in',
             active: location.startsWith('/auth/sign-in'),
@@ -60,8 +48,6 @@ const Sidebar = () => {
         <div className="border border-r border-[#ededed] bg-white text-white p-4 w-56">
             <div className="mb-4">
                 <Image src={'/cropped-logo-white.png'} alt={'logo'} width={400} height={400}/>
-
-
 
                 <h2 className="text-sm text-gray-500 font-bold mb-2 pt-4">Ghana Link Network Services</h2>
                 <Divider/>

@@ -39,7 +39,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import {Tabs, TabsContent, TabsList, TabsTrigger} from "@/components/ui/tabs";
 import {CardContent, CardDescription, CardHeader, CardTitle} from "@/components/ui/card";
-import {AiFillEdit} from "react-icons/ai";
+import {AiFillEdit, AiOutlineEye} from "react-icons/ai";
 import {GrLogout} from "react-icons/gr";
 import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
 import {toast} from "sonner";
@@ -62,8 +62,9 @@ interface iVisitor {
     visit_purpose: string;
     createdAt: string;
     departure_time: string;
-
-
+    reschedule_status: boolean;
+    reschedule_date: string,
+    reschedule_time: string,
 }
 
 interface iFilter {
@@ -77,8 +78,6 @@ export default function Reception() {
     const [visits, setVisit] = useState([]);
     const [isOpen, setIsOpen] = useState(false);
     const [isDepartureLoading, setIsDepartureLoading] = useState(false)
-    const [selectedTab, setSelectedTab] = useState('today');
-    const [cache, setCache] = useState({});
     const [currentVisitor, setUpdateVisitor] = useState<iVisitor>({
         email: '',
         _id: '',
@@ -94,7 +93,10 @@ export default function Reception() {
         },
         visit_purpose: '',
         createdAt: '',
-        departure_time: ''
+        departure_time: '',
+        reschedule_status: false,
+        reschedule_date: '',
+        reschedule_time: ''
     });
 
     const [selectedFilters, setSelectedFilters] = useState<iFilter>({
@@ -103,6 +105,29 @@ export default function Reception() {
         Pending: false,
         Declined: false,
     });
+
+
+
+    const isYesterday = (date) =>{
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        yesterday.setHours(0, 0, 0, 0);
+
+        const dateToCheck = new Date(date);
+        dateToCheck.setHours(0, 0, 0, 0);
+
+        return dateToCheck.getTime() === yesterday.getTime();
+    }
+
+    function isToday(date) {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        const dateToCheck = new Date(date);
+        dateToCheck.setHours(0, 0, 0, 0);
+
+        return dateToCheck.getTime() === today.getTime();
+    }
 
     const constructQueryString = (filters) => {
         const activeFilters = Object.keys(filters).filter(filter => filters[filter] && filter !== 'None');
@@ -152,7 +177,6 @@ export default function Reception() {
 
     const fetchFilteredData = useCallback(debounce(async (filters: iFilter) => {
         const queryString = constructQueryString(filters);
-
         try {
             const response = await axios.get(`http://localhost:4000/api/v1/visits${queryString}`, {
                 headers: {
@@ -180,28 +204,6 @@ export default function Reception() {
     };
 
     console.log(selectedFilters)
-
-    const getDateRange = (tab) => {
-        const today = new Date();
-        let startDate, endDate;
-
-        switch (tab) {
-            case 'today':
-                startDate = endDate = today;
-                break;
-            case 'yesterday':
-                startDate = endDate = new Date(today.setDate(today.getDate() - 1));
-                break;
-            case 'week':
-                startDate = new Date(today.setDate(today.getDate() - 7));
-                endDate = new Date();
-                break;
-            default:
-                startDate = endDate = today;
-        }
-
-        return { startDate: startDate.toISOString(), endDate: endDate.toISOString() };
-    };
 
 
     return (
@@ -242,13 +244,12 @@ export default function Reception() {
 
             </div>
 
-            <Tabs defaultValue={selectedTab}>
+            <Tabs defaultValue="today">
                 <div className="flex items-center">
 
                     <TabsList>
                         <TabsTrigger value="today">Today</TabsTrigger>
                         <TabsTrigger value="yesterday">Yesterday</TabsTrigger>
-                        <TabsTrigger value="week">Week</TabsTrigger>
                     </TabsList>
 
                     <div className="ml-auto flex items-center gap-2">
@@ -330,7 +331,88 @@ export default function Reception() {
                                                     <Badge
                                                         icon={RiTimeFill}
                                                         size="xs"
-                                                        className={`${visit.visit_response === 'Declined' && 'outline outline-red-700 p-2 bg-white rounded-lg text-red-600'} ${visit.visit_response === 'Approved' && 'outline outline-emerald-600 p-2 bg-white rounded-lg text-emerald-600'} ${visit.visit_response === 'Pending' && 'outline outline-yellow-500 p-2 bg-white rounded-lg text-yellow-500'}`}
+                                                        className={` ${visit.visit_response === 'Rescheduled' && 'outline outline-blue-700 p-2 bg-white rounded-lg text-blue-600'} ${visit.visit_response === 'Declined' && 'outline outline-red-700 p-2 bg-white rounded-lg text-red-600'} ${visit.visit_response === 'Approved' && 'outline outline-emerald-600 p-2 bg-white rounded-lg text-emerald-600'} ${visit.visit_response === 'Pending' && 'outline outline-yellow-500 p-2 bg-white rounded-lg text-yellow-500'}`}
+                                                    >
+                                                        {visit.visit_response}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell>
+                                                    <div className="flex gap-2">
+                                                        <Button onClick={() => setIsOpen(true)}>
+                                                            <AiOutlineEye/>
+                                                        </Button>
+                                                        <Button className='bg-red-800'
+                                                                onClick={() => onExitPremises(visit)}>
+                                                            {isDepartureLoading ? (
+                                                                <svg className="animate-spin h-5 w-5 mx-auto text-white"
+                                                                     xmlns="http://www.w3.org/2000/svg"
+                                                                     fill="none" viewBox="0 0 24 24">
+                                                                    <circle className="opacity-25" cx="12" cy="12"
+                                                                            r="10" stroke="currentColor"
+                                                                            strokeWidth="4"></circle>
+                                                                    <path className="opacity-75" fill="currentColor"
+                                                                          d="M4 12a8 8 0 018-8v4l-2 2a4 4 0 100 8l2 2v4a8 8 0 01-8-8z"></path>
+                                                                </svg>
+                                                            ) : (
+                                                                <GrLogout/>
+                                                            )}
+                                                        </Button>
+                                                    </div>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))
+                                    }
+                                </TableBody>
+                            </Table>
+
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="yesterday">
+                    <Card className="mt-5">
+                        <CardHeader className="px-7">
+                            <CardTitle className=''>Guests</CardTitle>
+                            <CardDescription className='pb-10 pt-3'>
+                                All guests for Ghana Link Network Services
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <Table>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableHeaderCell>Profile</TableHeaderCell>
+                                        <TableHeaderCell>Full name</TableHeaderCell>
+                                        <TableHeaderCell className="">
+                                            Email
+                                        </TableHeaderCell>
+                                        <TableHeaderCell>Host</TableHeaderCell>
+                                        <TableHeaderCell>Status</TableHeaderCell>
+                                        <TableHeaderCell>Actions</TableHeaderCell>
+
+                                    </TableRow>
+                                </TableHead>
+
+                                <TableBody>
+                                    {
+                                        visits.filter((value) => {
+                                            return isYesterday(value);
+                                        }).map((visit) => (
+                                            <TableRow onClick={() => setUpdateVisitor(visit)} key={visit._id}>
+                                                <TableCell>
+                                                    <Avatar>
+                                                        <AvatarImage src={visit.image} alt="profile"/>
+                                                        <AvatarFallback>CN</AvatarFallback>
+                                                    </Avatar>
+
+                                                </TableCell>
+                                                <TableCell>{visit.full_name}</TableCell>
+                                                <TableCell className="">{visit.email}</TableCell>
+                                                <TableCell>{visit.employee.full_name}</TableCell>
+                                                <TableCell>
+                                                    <Badge
+                                                        icon={RiTimeFill}
+                                                        size="xs"
+                                                        className={` ${visit.visit_response === 'Rescheduled' && 'outline outline-blue-700 p-2 bg-white rounded-lg text-blue-600'} ${visit.visit_response === 'Declined' && 'outline outline-red-700 p-2 bg-white rounded-lg text-red-600'} ${visit.visit_response === 'Approved' && 'outline outline-emerald-600 p-2 bg-white rounded-lg text-emerald-600'} ${visit.visit_response === 'Pending' && 'outline outline-yellow-500 p-2 bg-white rounded-lg text-yellow-500'}`}
                                                     >
                                                         {visit.visit_response}
                                                     </Badge>
@@ -419,18 +501,34 @@ export default function Reception() {
                                         </td>
                                     </tr>
                                 )}
+                                {currentVisitor.reschedule_status &&  (
+                                    <tr className="border-b-2">
+                                        <td className="font-semibold text-lg p-2">Rescheduled Date</td>
+                                        <td className="text-sm leading-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content p-2">
+                                            { new Date(currentVisitor.reschedule_date).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                )}
+                                {currentVisitor.reschedule_status &&  (
+                                    <tr className="border-b-2">
+                                        <td className="font-semibold text-lg p-2">Rescheduled Time</td>
+                                        <td className="text-sm leading-6 text-tremor-default text-tremor-content dark:text-dark-tremor-content p-2">
+                                            { currentVisitor.reschedule_time}
+                                        </td>
+                                    </tr>
+                                )}
                                 </tbody>
                             </table>
-                            <div className="flex justify-between gap-x-3.5 w-full mt-8">
-                                {(currentVisitor.visit_response !== "Declined" && currentVisitor.visit_response !== "Approved") && (
-                                    <>
-                                        <Button className="w-1/2 bg-red-700" onClick={() => setIsOpen(false)}>Cancel
-                                            Appointment</Button>
-                                        <Button className="w-1/2 bg-emerald-700" onClick={() => setIsOpen(false)}>Approve
-                                            Appointment</Button>
-                                    </>
-                                )}
-                            </div>
+                            {/*<div className="flex justify-between gap-x-3.5 w-full mt-8">*/}
+                            {/*    {(currentVisitor.visit_response !== "Declined" && currentVisitor.visit_response !== "Approved") && (*/}
+                            {/*        <>*/}
+                            {/*            <Button className="w-1/2 bg-red-700" onClick={() => setIsOpen(false)}>Cancel*/}
+                            {/*                Appointment</Button>*/}
+                            {/*            <Button className="w-1/2 bg-emerald-700" onClick={() => setIsOpen(false)}>Approve*/}
+                            {/*                Appointment</Button>*/}
+                            {/*        </>*/}
+                            {/*    )}*/}
+                            {/*</div>*/}
                         </div>
 
                     </DialogPanel>

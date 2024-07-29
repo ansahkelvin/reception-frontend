@@ -9,6 +9,7 @@ import {getToken} from "@/utils/auth";
 import {Dialog, DialogPanel} from "@tremor/react";
 import {DotLottieReact} from "@lottiefiles/dotlottie-react";
 import {useRouter} from "next/navigation";
+import {RescheduleButton} from "@/app/visits/[visitId]/datePicker";
 
 export default function ViewDetails({params}) {
     const visitId = params.visitId;
@@ -20,6 +21,7 @@ export default function ViewDetails({params}) {
     const [isLoading, setIsLoading] = useState(false)
     const [isOpen, setIsOpen] = useState(false)
     const token = getToken();
+
 
 
     useEffect(() => {
@@ -68,7 +70,6 @@ export default function ViewDetails({params}) {
             setIsOpen(false)
             setIsLoading(false)
 
-
         }
 
     }
@@ -114,18 +115,21 @@ export default function ViewDetails({params}) {
                <Card className={'p-10'}>
                    <div className={'py-5'}>
                        <h1 className="font-semibold text-2xl">Name: {visitDetails.full_name}</h1>
-                       <h1 className="font-semibold my-2 text-gray-500 text-sm">Purpose: {visitDetails.visit_purpose}</h1>
-                       <h1>Company Name: {visitDetails.company_name}</h1>
+                       <hr className="mt-5 mb-5"/>
+                       <h1 className="font-semibold my-2 text-gray-500 text-lg">Purpose: {visitDetails.visit_purpose}</h1>
+                       <hr className="mt-5 mb-5"/>
+                       <h1 className="font-semibold my-2 text-gray-500 text-lg">Company Name: {visitDetails.company_name}</h1>
+                       <hr className="mt-5 mb-5"/>
 
                        <div className="flex flex-row justify-between">
-                           <h1 className='mt-3 font-semibold my-2 text-black text-sm '>Time: {new Date(visitDetails.createdAt).toLocaleTimeString()}</h1>
-                           <h1 className='mt-3 font-semibold my-2 text-black text-sm'>Date: {new Date(visitDetails.createdAt).toLocaleDateString()}</h1>
+                           <h1 className='mt-3 font-semibold my-2 text-gray-500 text-lg '>Time: {new Date(visitDetails.createdAt).toLocaleTimeString()}</h1>
+                           <h1 className='mt-3 font-semibold my-2 text-gray-500 text-lg'>Date: {new Date(visitDetails.createdAt).toLocaleDateString()}</h1>
                        </div>
-
+                       <hr className="mt-5"/>
 
                    </div>
                    <div className="flex flex-col  space-y-2">
-                   <Label className='py-2' htmlFor="name">Extra comment</Label>
+                   <Label className='py-2' htmlFor="name">Comment</Label>
                        <Input
                            id="company"
                            placeholder="Enter your response here"
@@ -157,11 +161,15 @@ export default function ViewDetails({params}) {
                                </>
                                : <>
                                    <Button className="mt-8 w-1/2 mr-2 bg-red-700" onClick={() => onDeclineResponse()}>
-                                       Cancel Appointment
+                                       Cancel
                                    </Button>
                                    <Button className="mt-8 w-1/2 bg-emerald-700" onClick={() => onValidResponse()} >
-                                       Approve Appointment
+                                       Approve
                                    </Button>
+                                   {/*<Button className="mt-8 w-1/2 bg-purple-600" onClick={() => onValidResponse()} >*/}
+                                   {/*    Reschedule*/}
+                                   {/*</Button>*/}
+                                   <RescheduleButton visitDetails={visitDetails}/>
                                </>
                        }
 
@@ -171,6 +179,7 @@ export default function ViewDetails({params}) {
                </Card>
 
            </div> : <div>Loading</div>}
+
        </div>
 
     )
