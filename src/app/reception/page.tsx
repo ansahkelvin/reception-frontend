@@ -519,16 +519,16 @@ export default function Reception() {
                                 )}
                                 </tbody>
                             </table>
-                            {/*<div className="flex justify-between gap-x-3.5 w-full mt-8">*/}
-                            {/*    {(currentVisitor.visit_response !== "Declined" && currentVisitor.visit_response !== "Approved") && (*/}
-                            {/*        <>*/}
-                            {/*            <Button className="w-1/2 bg-red-700" onClick={() => setIsOpen(false)}>Cancel*/}
-                            {/*                Appointment</Button>*/}
-                            {/*            <Button className="w-1/2 bg-emerald-700" onClick={() => setIsOpen(false)}>Approve*/}
-                            {/*                Appointment</Button>*/}
-                            {/*        </>*/}
-                            {/*    )}*/}
-                            {/*</div>*/}
+                            <div className="flex justify-between gap-x-3.5 w-full mt-8">
+                                {(currentVisitor.visit_response !== "Declined" && currentVisitor.visit_response !== "Approved") && (
+                                    <>
+                                        <Button className="w-1/2 bg-red-700" onClick={() => setIsOpen(false)}>Cancel
+                                            Appointment</Button>
+                                        <Button className="w-1/2 bg-emerald-700" onClick={() => setIsOpen(false)}>Approve
+                                            Appointment</Button>
+                                    </>
+                                )}
+                            </div>
                         </div>
 
                     </DialogPanel>

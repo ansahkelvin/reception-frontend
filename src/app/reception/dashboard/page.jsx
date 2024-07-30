@@ -232,7 +232,7 @@ export default function Dashboard() {
                                         return <TableRow key={visitor._id}>
                                             <TableCell>
                                                 <div className="font-medium">{visitor.full_name}</div>
-                                                <div className=" text-sm text-muted-foreground ">
+                                                <div className=" text-sm text-muted-foreground">
                                                     {visitor.email}
                                                 </div>
                                             </TableCell>
